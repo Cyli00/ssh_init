@@ -21,7 +21,7 @@
 
 ```bash
 # 下载脚本
-curl -O https://raw.githubusercontent.com/leahd/ssh_init/master/linux_ssh_init.sh
+curl -O https://raw.githubusercontent.com/Cyli00/ssh_init/refs/heads/main/linux_ssh_init.sh
 
 # 运行
 sudo bash linux_ssh_init.sh
