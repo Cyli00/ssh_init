@@ -71,7 +71,7 @@ print_err() {
 }
 
 print_warn() {
-    echo -e "${YELLOW}${WARN} $*${NC}"
+    echo -e "${YELLOW}${WARN} $*${NC}" >&2
 }
 
 print_info() {
@@ -330,14 +330,14 @@ read_port() {
     local port=""
 
     while true; do
-        echo -ne "${ARROW} New SSH port [${default_port}]: "
+        echo -ne "${ARROW} New SSH port [${default_port}]: " >&2
         read -r port
         port="${port:-$default_port}"
 
         if is_valid_port "$port"; then
             if (( port < 1024 )) && (( port != 22 )); then
                 print_warn "Port ${port} is a privileged port (< 1024)"
-                echo -ne "   Continue anyway? [y/N]: "
+                echo -ne "   Continue anyway? [y/N]: " >&2
                 read -r confirm
                 [[ "${confirm,,}" == "y" ]] && break
             else
@@ -356,7 +356,7 @@ read_username() {
     local username=""
 
     while true; do
-        echo -ne "${ARROW} Login user [${default_user}]: "
+        echo -ne "${ARROW} Login user [${default_user}]: " >&2
         read -r username
         username="${username:-$default_user}"
 
@@ -371,13 +371,13 @@ read_username() {
 }
 
 read_permit_root() {
-    echo -e "${ARROW} Root login policy:"
-    echo "   1) Allow root with key only (prohibit-password)"
-    echo "   2) Disable root login completely (no)"
+    echo -e "${ARROW} Root login policy:" >&2
+    echo "   1) Allow root with key only (prohibit-password)" >&2
+    echo "   2) Disable root login completely (no)" >&2
 
     local choice=""
     while true; do
-        echo -ne "${ARROW} Select [1]: "
+        echo -ne "${ARROW} Select [1]: " >&2
         read -r choice
         choice="${choice:-1}"
 
@@ -390,11 +390,11 @@ read_permit_root() {
 }
 
 read_pubkey() {
-    echo -e "${ARROW} Paste your SSH public key (ssh-ed25519/ssh-rsa/ecdsa):"
+    echo -e "${ARROW} Paste your SSH public key (ssh-ed25519/ssh-rsa/ecdsa):" >&2
     local key=""
 
     while true; do
-        echo -ne "   "
+        echo -ne "   " >&2
         IFS= read -r key
 
         if [[ -z "$key" ]]; then
@@ -406,7 +406,7 @@ read_pubkey() {
             break
         else
             print_warn "This doesn't look like a valid public key format."
-            echo -ne "   Use anyway? [y/N]: "
+            echo -ne "   Use anyway? [y/N]: " >&2
             read -r confirm
             [[ "${confirm,,}" == "y" ]] && break
         fi
