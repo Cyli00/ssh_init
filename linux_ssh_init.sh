@@ -416,6 +416,7 @@ rollback_on_exit() {
         if (( CONFIG_HAD_PREVIOUS == 1 )); then
             if ! mv -f -- "$CONFIG_BACKUP" "$CONFIG_FILE"; then
                 print_err "Automatic rollback failed; restore ${CONFIG_BACKUP} manually!"
+                CONFIG_BACKUP="" # Never delete the only copy after a failed restore.
             fi
         elif ! rm -f -- "$CONFIG_FILE"; then
             print_err "Automatic rollback failed; remove ${CONFIG_FILE} manually!"
@@ -428,6 +429,13 @@ rollback_on_exit() {
     [[ -z "$CONFIG_TEMP" ]] || rm -f -- "$CONFIG_TEMP"
     [[ -z "$CONFIG_BACKUP" ]] || rm -f -- "$CONFIG_BACKUP"
     exit "$status"
+}
+
+has_usable_sudo_password() {
+    local status
+    status="$(passwd -S "$1" 2>/dev/null)" || return 1
+    # Debian/Ubuntu use P for an active account password, L/NP otherwise.
+    [[ "$(awk '{print $2}' <<< "$status")" == "P" ]]
 }
 
 read_passwordless_sudo() {
@@ -590,6 +598,13 @@ main() {
             configure_passwordless_sudo "$TARGET_USER"
             print_ok "Passwordless sudo explicitly enabled"
         else
+            if [[ "$PERMIT_ROOT" == "no" ]] &&
+               [[ ! -e "/etc/sudoers.d/90-${TARGET_USER}-nopasswd" ]] &&
+               ! has_usable_sudo_password "$TARGET_USER"; then
+                print_err "Root SSH is disabled and this user has no usable sudo password."
+                print_info "Set a password with 'passwd ${TARGET_USER}' or rerun and opt in to passwordless sudo."
+                return 1
+            fi
             print_warn "Passwordless sudo not added. Set an account password with passwd if sudo is needed."
             if [[ -e "/etc/sudoers.d/90-${TARGET_USER}-nopasswd" ]]; then
                 print_warn "A pre-existing passwordless sudo rule remains; review it manually."
