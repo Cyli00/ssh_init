@@ -1,0 +1,17 @@
+name: Shell checks
+
+on:
+  push:
+    branches: [main, 'hardening/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bash syntax and regression tests
+        run: bash tests/test_hardening.sh
